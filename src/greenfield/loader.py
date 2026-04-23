@@ -39,5 +39,5 @@ class GreenfieldLoader(Loader):
 
 
 def install():
-    if not any(isinstance(f, GreenfieldFinder) for f in sys.meta_path):
+    if not any(isinstance(f, GreenfieldFinder) for f in meta_path):
         meta_path.insert(0, GreenfieldFinder())
