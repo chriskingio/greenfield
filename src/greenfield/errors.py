@@ -1,0 +1,3 @@
+class GreenFieldParsingError(Exception):
+    """Represents an error in parsing a greenfield file"""
+    ...

@@ -1,0 +1,71 @@
+?start: (bundle | role)+
+
+bundle: "bundle" NAME ["(" [param_list] ")"] "{" statement* "}"
+role: "role" NAME "{" statement* "}"
+
+?statement:
+    | assignment
+    | for_loop
+    | resource
+    | if_statement
+
+param_list: param ("," param)*
+param: NAME "=" atom
+
+assignment: NAME "=" expression
+for_loop: "for" NAME "in" or_expression "{" statement* "}"
+resource: NAME (strings | NAME) dict
+
+?expression: or_expression
+?or_expression: and_expression ("||" and_expression)*
+?and_expression: not_expression ("&&" not_expression)*
+?not_expression: "!" not_expression | comparison
+?comparison: addition (COMPARE_OP addition)*
+?addition: multiplication
+    | addition "+" multiplication -> add
+    | addition "-" multiplication -> sub
+?multiplication: unary
+    | multiplication "*" unary -> mul
+    | multiplication "/" unary -> div
+?unary: "-" unary | atom
+
+if_statement: "if" "(" expression ")" "{" statement* "}" else_clause?
+else_clause: "else" "{" statement* "}"
+    | "else" if_statement
+
+// TODO: map these with "friendly" node names like "EQUALS", "NOT_EQUALS", etc?
+COMPARE_OP: "=="
+    | "!="
+    | "<"
+    | "<="
+    | ">"
+    | ">="
+
+?atom:
+    | "true" -> true
+    | "false" -> false
+    | "null" -> null
+    | strings
+    | NUMBER
+    | array
+    | dict
+    | NAME
+    | "(" expression ")"
+
+?strings: fstring | string
+fstring: ESCAPED_STRING
+string: SINGLE_QUOTED_STRING
+array: "[" [expression ("," expression)* ","?] "]"
+dict: "{" [kvpair ("," kvpair)* ","?] "}"
+kvpair: (NAME | strings) ":" expression
+
+SINGLE_QUOTED_STRING: "'" _STRING_ESC_INNER "'"
+
+// Ignore whitespaces and comments
+%import common.WS
+%import common.NUMBER
+%import common._STRING_ESC_INNER
+%import common.ESCAPED_STRING
+%import common.CNAME -> NAME
+%ignore WS
+%ignore /\/\/[^\n]*/ // line comments
